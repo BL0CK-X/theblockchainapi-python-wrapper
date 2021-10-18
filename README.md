@@ -8,7 +8,7 @@ See <a href="https://docs.theblockchainapi.com">the docs</a> for more info.
 
 `pip install theblockchainapi`
 
-Get an API key for free at <a href="https://dashboard.theblockchainapi.com">dashboard.theblockchainapi.com</a>.
+Get an API key at <a href="https://dashboard.theblockchainapi.com">dashboard.theblockchainapi.com</a>.
 
 `from theblockchainapi import TheBlockchainAPIResource`
 

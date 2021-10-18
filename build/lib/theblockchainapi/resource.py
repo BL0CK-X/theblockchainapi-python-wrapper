@@ -4,12 +4,12 @@ import requests
 from typing import Optional
 
 
-class Network(Enum):
+class SolanaNetwork(Enum):
     DEVNET = "devnet"
     MAINNET_BETA = "mainnet-beta"
 
 
-class CurrencyUnit(Enum):
+class SolanaCurrencyUnit(Enum):
     LAMPORT = "lamport"
     SOL = "sol"
 
@@ -91,8 +91,8 @@ class TheBlockchainAPIResource:
             endpoint="account/activity",
             request_method=self.__RequestMethod.POST
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise response['error_message']
         return response
 
     def generate_secret_key(self) -> str:
@@ -105,8 +105,8 @@ class TheBlockchainAPIResource:
             endpoint="solana/wallet/secret_recovery_phrase",
             request_method=self.__RequestMethod.POST
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response['secret_recovery_phrase']
 
     def derive_public_key(
@@ -134,15 +134,15 @@ class TheBlockchainAPIResource:
             endpoint="solana/wallet/public_key",
             request_method=self.__RequestMethod.POST
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response['public_key']
 
     def get_balance(
         self,
         public_key: str,
-        unit: CurrencyUnit = CurrencyUnit.LAMPORT,
-        network: Network = Network.DEVNET
+        unit: SolanaCurrencyUnit = SolanaCurrencyUnit.LAMPORT,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ) -> dict:
         """
         More info: https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1balance/get
@@ -162,45 +162,42 @@ class TheBlockchainAPIResource:
             endpoint="solana/wallet/balance",
             request_method=self.__RequestMethod.GET
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response
 
     def get_nfts_belonging_to_address(
         self,
         public_key: str,
-        network: Network = Network.DEVNET,
-        candy_machine_id: Optional[str] = None
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ) -> list:
         """
         More info: https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1nfts/get
         :param public_key:
         :param network:
-        :param candy_machine_id:
         :return:
         """
         payload = {
             "public_key": public_key,
             "network": network.value
         }
-        if candy_machine_id is not None:
-            payload["candy_machine_id"] = candy_machine_id
 
         response = self._request(
             payload=payload,
             endpoint="solana/wallet/nfts",
             request_method=self.__RequestMethod.GET
         )
-        if 'error' in response:
-            raise response['error']
-        return response
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['nfts_owned']
 
     def derive_associated_token_account_address(
         self,
         token_address: str,
         secret_recovery_phrase: str,
         derivation_path: str = "m/44/501/0/0",
-        passphrase: str = str()
+        passphrase: str = str(),
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ) -> str:
         """
         More info: https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1associated_token_account/post
@@ -208,13 +205,15 @@ class TheBlockchainAPIResource:
         :param secret_recovery_phrase:
         :param derivation_path: Derivation path default matches the CLI. Use "m/44/501/0/0" to match Phantom.
         :param passphrase:
+        :param network:
         :return:
         """
         payload = {
             "token_address": token_address,
             "secret_recovery_phrase": secret_recovery_phrase,
             "derivation_path": derivation_path,
-            "passphrase": passphrase
+            "passphrase": passphrase,
+            "network": network.value
         }
 
         response = self._request(
@@ -222,8 +221,8 @@ class TheBlockchainAPIResource:
             endpoint="solana/wallet/associated_token_account",
             request_method=self.__RequestMethod.POST
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response['associated_token_address']
 
     def transfer(
@@ -233,7 +232,7 @@ class TheBlockchainAPIResource:
         secret_recovery_phrase: str,
         derivation_path: str = "m/44/501/0/0",
         passphrase: str = str(),
-        network: Network = Network.DEVNET,
+        network: SolanaNetwork = SolanaNetwork.DEVNET,
         amount: str = "1"
     ) -> str:
         """
@@ -262,8 +261,8 @@ class TheBlockchainAPIResource:
             endpoint="solana/wallet/transfer",
             request_method=self.__RequestMethod.POST
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response['transaction_signature']
 
     def create_nft(
@@ -271,7 +270,7 @@ class TheBlockchainAPIResource:
         secret_recovery_phrase: str,
         derivation_path: str = "m/44/501/0/0",
         passphrase: str = str(),
-        network: Network = Network.DEVNET,
+        network: SolanaNetwork = SolanaNetwork.DEVNET,
         nft_name: str = str(),
         nft_symbol: str = str(),
         nft_description: str = str(),
@@ -310,14 +309,14 @@ class TheBlockchainAPIResource:
             endpoint="solana/nft",
             request_method=self.__RequestMethod.POST
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response
 
     def get_nft_metadata(
         self,
         mint_address: str,
-        network: Network = Network.DEVNET
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ) -> dict:
         """
         More info: https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft/get
@@ -335,8 +334,8 @@ class TheBlockchainAPIResource:
             endpoint="solana/nft",
             request_method=self.__RequestMethod.GET
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response
 
     def get_nft_mint_fee(
@@ -351,6 +350,6 @@ class TheBlockchainAPIResource:
             endpoint="solana/nft/mint/fee",
             request_method=self.__RequestMethod.GET
         )
-        if 'error' in response:
-            raise response['error']
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
         return response
