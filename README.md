@@ -20,8 +20,8 @@ There are many examples using this package <a href="https://github.com/BL0CK-X/t
 
 ## Python Documentation
 
-To get documentation in python, run `help(TheBlockchainAPIResource)` after importing `TheBlockchainAPIResource` as shown above.
+To get a list of available functions, run `help(TheBlockchainAPIResource)` after importing `TheBlockchainAPIResource` as shown above.
 
 ## Documentation
 
-For full documentation go to <a>https://docs.theblockchainapi.com</a>.
+For full API documentation go to <a>https://docs.theblockchainapi.com</a>.
