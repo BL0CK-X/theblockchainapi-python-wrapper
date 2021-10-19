@@ -16,6 +16,8 @@ Get an API key at <a href="https://dashboard.theblockchainapi.com">dashboard.the
 
 `print(result)`
 
+There are many examples using this package <a href="https://github.com/BL0CK-X/the-blockchain-api/tree/main/examples">here</a>.
+
 ## Python Documentation
 
 To get documentation in python, run `help(TheBlockchainAPIResource)` after importing `TheBlockchainAPIResource` as shown above.
