@@ -24,4 +24,4 @@ To get a list of available functions, run `help(TheBlockchainAPIResource)` after
 
 ## Documentation
 
-For full API documentation go to <a>https://docs.theblockchainapi.com</a>.
+For full API documentation, check out <a href="https://docs.theblockchainapi.com">the docs</a>.
