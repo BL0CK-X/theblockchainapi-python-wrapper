@@ -1,6 +1,6 @@
 # The Blockchain API
 
-Submit issues and feature requests for our API on our main GitHub repository</a>.
+Submit issues and feature requests for our API on our <a href="https://github.com/BL0CK-X/the-blockchain-api">main GitHub repository</a>.
 
 See <a href="https://docs.theblockchainapi.com">the docs</a> for more info.
 
