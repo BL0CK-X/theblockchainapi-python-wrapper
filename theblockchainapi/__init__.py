@@ -1,1 +1,1 @@
-from theblockchainapi.resource import TheBlockchainAPIResource, SolanaNetwork, SolanaCurrencyUnit
+from theblockchainapi.resource import TheBlockchainAPIResource, SolanaNetwork, SolanaCurrencyUnit, SolanaNFTUploadMethod

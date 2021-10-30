@@ -14,6 +14,11 @@ class SolanaCurrencyUnit(Enum):
     SOL = "sol"
 
 
+class SolanaNFTUploadMethod(Enum):
+    S3 = "S3"
+    LINK = "LINK"
+
+
 class TheBlockchainAPIResource:
 
     __url = "https://api.theblockchainapi.com/v1/"
@@ -44,7 +49,8 @@ class TheBlockchainAPIResource:
         """
         return {
             'APIKeyID': self.__api_key_id,
-            'APISecretKey': self.__api_secret_key
+            'APISecretKey': self.__api_secret_key,
+            'Language': 'Python'
         }
 
     def _request(self, payload, endpoint, request_method, files=None, headers=None):
@@ -64,8 +70,9 @@ class TheBlockchainAPIResource:
             r = requests.request(
                 request_method.value,
                 url=self.__url + endpoint,
-                data=json.dumps(payload),
-                headers=headers
+                params=payload,
+                headers=headers,
+                timeout=120
             )
         else:
             r = requests.request(
@@ -73,7 +80,8 @@ class TheBlockchainAPIResource:
                 url=self.__url + endpoint,
                 data=payload,
                 files=files,
-                headers=headers
+                headers=headers,
+                timeout=120
             )
         try:
             json_content = json.loads(r.content)
@@ -112,7 +120,7 @@ class TheBlockchainAPIResource:
     def derive_public_key(
         self,
         secret_recovery_phrase: str,
-        derivation_path: str = "m/44/501/0/0",
+        derivation_path: Optional[str] = None,
         passphrase: str = str()
     ) -> str:
         """
@@ -125,9 +133,10 @@ class TheBlockchainAPIResource:
         """
         payload = {
             "secret_recovery_phrase": secret_recovery_phrase,
-            "derivation_path": derivation_path,
             "passphrase": passphrase
         }
+        if derivation_path is not None:
+            payload["derivation_path"] = derivation_path
 
         response = self._request(
             payload=payload,
@@ -195,7 +204,7 @@ class TheBlockchainAPIResource:
         self,
         token_address: str,
         secret_recovery_phrase: str,
-        derivation_path: str = "m/44/501/0/0",
+        derivation_path: Optional[str] = None,
         passphrase: str = str(),
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ) -> str:
@@ -211,10 +220,11 @@ class TheBlockchainAPIResource:
         payload = {
             "token_address": token_address,
             "secret_recovery_phrase": secret_recovery_phrase,
-            "derivation_path": derivation_path,
             "passphrase": passphrase,
             "network": network.value
         }
+        if derivation_path is not None:
+            payload["derivation_path"] = derivation_path
 
         response = self._request(
             payload=payload,
@@ -227,19 +237,19 @@ class TheBlockchainAPIResource:
 
     def transfer(
         self,
-        token_address: str,
-        recipient_address: str,
         secret_recovery_phrase: str,
-        derivation_path: str = "m/44/501/0/0",
+        recipient_address: str,
+        token_address: Optional[str] = None,
+        derivation_path: Optional[str] = None,
         passphrase: str = str(),
         network: SolanaNetwork = SolanaNetwork.DEVNET,
         amount: str = "1"
     ) -> str:
         """
         More info: https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1transfer/post
-        :param token_address:
-        :param recipient_address:
         :param secret_recovery_phrase:
+        :param recipient_address:
+        :param token_address: If not provided, defaults to transferring SOL
         :param derivation_path: Derivation path default matches the CLI. Use "m/44/501/0/0" to match Phantom.
         :param passphrase:
         :param network:
@@ -247,14 +257,16 @@ class TheBlockchainAPIResource:
         :return:
         """
         payload = {
-            "token_address": token_address,
             "recipient_address": recipient_address,
             "secret_recovery_phrase": secret_recovery_phrase,
-            "derivation_path": derivation_path,
             "passphrase": passphrase,
             "network": network.value,
             "amount": amount
         }
+        if derivation_path is not None:
+            payload['derivation_path'] = derivation_path
+        if token_address is not None:
+            payload["token_address"] = token_address
 
         response = self._request(
             payload=payload,
@@ -268,14 +280,15 @@ class TheBlockchainAPIResource:
     def create_nft(
         self,
         secret_recovery_phrase: str,
-        derivation_path: str = "m/44/501/0/0",
+        derivation_path: Optional[str] = None,
         passphrase: str = str(),
         network: SolanaNetwork = SolanaNetwork.DEVNET,
         nft_name: str = str(),
         nft_symbol: str = str(),
         nft_description: str = str(),
         nft_url: str = str(),
-        nft_metadata: dict = None
+        nft_metadata: dict = None,
+        nft_upload_method: SolanaNFTUploadMethod = SolanaNFTUploadMethod.S3
     ) -> dict:
         """
         More info: https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft/post
@@ -288,21 +301,25 @@ class TheBlockchainAPIResource:
         :param nft_description: The description of the NFT
         :param nft_url: The image of the NFT
         :param nft_metadata: The metadata of the NFT
+        :param nft_upload_method: The upload method of the NFT. Upload the URL to S3 and embed it. Or save it directly
+        to the NFT
         :return:
         """
         if nft_metadata is None:
             nft_metadata = dict()
         payload = {
             "secret_recovery_phrase": secret_recovery_phrase,
-            "derivation_path": derivation_path,
             "passphrase": passphrase,
             "network": network.value,
             "nft_name": nft_name,
             "nft_symbol": nft_symbol,
             "nft_description": nft_description,
             "nft_url": nft_url,
-            "nft_metadata": nft_metadata
+            "nft_metadata": nft_metadata,
+            "nft_upload_method": nft_upload_method.value
         }
+        if derivation_path is not None:
+            payload['derivation_path'] = derivation_path
 
         response = self._request(
             payload=payload,
@@ -353,3 +370,107 @@ class TheBlockchainAPIResource:
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response
+
+    def get_airdrop(
+        self,
+        recipient_address: str
+    ) -> str:
+        """
+        Get an airdrop of 0.015 SOL on the devnet
+        :param recipient_address:
+        :return: Transaction signature
+        """
+        response = self._request(
+            payload={
+                "recipient_address": recipient_address
+            },
+            endpoint="solana/wallet/airdrop",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['transaction_signature']
+
+    def get_candy_machine_config_public_key(
+        self,
+        candy_machine_id: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "network": network.value,
+            "candy_machine_id": candy_machine_id
+        }
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine/config",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['config_address']
+
+    def get_candy_machine_info(
+        self,
+        candy_machine_id: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "network": network.value,
+            "candy_machine_id": candy_machine_id
+        }
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine/info",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def mint_from_candy_machine(
+        self,
+        candy_machine_id: str,
+        secret_recovery_phrase: str,
+        derivation_path: Optional[str] = None,
+        passphrase: str = str(),
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "secret_recovery_phrase": secret_recovery_phrase,
+            "network": network.value,
+            "passphrase": passphrase,
+            "candy_machine_id": candy_machine_id
+        }
+        if derivation_path is not None:
+            payload['derivation_path'] = derivation_path
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine/mint",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['transaction_signature']
+
+    def create_test_candy_machine(
+        self,
+        secret_recovery_phrase: str,
+        derivation_path: Optional[str] = None,
+        passphrase: str = str(),
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "secret_recovery_phrase": secret_recovery_phrase,
+            "network": network.value,
+            "passphrase": passphrase
+        }
+        if derivation_path is not None:
+            payload['derivation_path'] = derivation_path
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['candy_machine_address']
