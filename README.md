@@ -1,6 +1,6 @@
 # The Blockchain API
 
-Submit issues and feature requests for our API on our main GitHub repository</a>.
+Submit issues and feature requests for our API on our <a href="https://github.com/BL0CK-X/the-blockchain-api">main GitHub repository</a>.
 
 See <a href="https://docs.theblockchainapi.com">the docs</a> for more info.
 
@@ -8,7 +8,7 @@ See <a href="https://docs.theblockchainapi.com">the docs</a> for more info.
 
 `pip install theblockchainapi`
 
-Get an API key at <a href="https://dashboard.theblockchainapi.com">dashboard.theblockchainapi.com</a>.
+Get an API key pair at <a href="https://dashboard.theblockchainapi.com">dashboard.theblockchainapi.com</a>.
 
 `from theblockchainapi import TheBlockchainAPIResource`
 
@@ -16,10 +16,12 @@ Get an API key at <a href="https://dashboard.theblockchainapi.com">dashboard.the
 
 `print(result)`
 
+There are many examples using this package <a href="https://github.com/BL0CK-X/the-blockchain-api/tree/main/examples">here</a>.
+
 ## Python Documentation
 
-To get documentation in python, run `help(TheBlockchainAPIResource)` after importing `TheBlockchainAPIResource` as shown above.
+To get a list of available functions, run `help(TheBlockchainAPIResource)` after importing `TheBlockchainAPIResource` as shown above.
 
 ## Documentation
 
-For full documentation go to <a>https://docs.theblockchainapi.com</a>.
+For full API documentation, check out <a href="https://docs.theblockchainapi.com">the docs</a>.
