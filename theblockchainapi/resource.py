@@ -435,6 +435,16 @@ class TheBlockchainAPIResource:
         passphrase: str = str(),
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
+        """
+
+        :param candy_machine_id:
+        :param secret_recovery_phrase:
+        :param derivation_path:
+        :param passphrase:
+        :param network:
+        :return: A task_id. Use the `get_task` function to retrieve the result once this task has completed processing.
+        You can poll the `get_task` function to see results.
+        """
         payload = {
             "secret_recovery_phrase": secret_recovery_phrase,
             "network": network.value,
@@ -450,7 +460,7 @@ class TheBlockchainAPIResource:
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        return response['transaction_signature']
+        return response['task_id']
 
     def create_test_candy_machine(
         self,
@@ -474,3 +484,13 @@ class TheBlockchainAPIResource:
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['candy_machine_address']
+
+    def get_task(self, task_id: str):
+        response = self._request(
+            payload=dict(),
+            endpoint=f"task/{task_id}",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
