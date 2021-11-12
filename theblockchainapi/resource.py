@@ -610,7 +610,7 @@ class TheBlockchainAPIResource:
         response = self._request(
             payload=payload,
             endpoint="solana/account",
-            request_method=self.__RequestMethod.POST
+            request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
