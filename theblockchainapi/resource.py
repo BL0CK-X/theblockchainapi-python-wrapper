@@ -596,7 +596,7 @@ class TheBlockchainAPIResource:
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        return response
+        return response['candy_machine_id']
 
     def get_account_info(
         self,

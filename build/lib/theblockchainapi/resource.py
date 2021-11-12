@@ -418,31 +418,6 @@ class TheBlockchainAPIResource:
             raise Exception(response['error_message'])
         return response['transaction_signature']
 
-    def get_candy_machine_config_public_key(
-        self,
-        candy_machine_id: str,
-        network: SolanaNetwork = SolanaNetwork.DEVNET
-    ):
-        """
-        More Info:
-        https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft~1candy_machine~1config/post
-        :param candy_machine_id:
-        :param network:
-        :return:
-        """
-        payload = {
-            "network": network.value,
-            "candy_machine_id": candy_machine_id
-        }
-        response = self._request(
-            payload=payload,
-            endpoint="solana/nft/candy_machine/config",
-            request_method=self.__RequestMethod.POST
-        )
-        if 'error_message' in response:
-            raise Exception(response['error_message'])
-        return response['config_address']
-
     def get_candy_machine_info(
         self,
         candy_machine_id: str,
