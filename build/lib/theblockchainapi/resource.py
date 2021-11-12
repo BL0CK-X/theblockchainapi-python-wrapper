@@ -568,3 +568,75 @@ class TheBlockchainAPIResource:
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response
+
+    def get_config_details(
+        self,
+        config_address,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "network": network.value,
+            "config_address": config_address
+        }
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine/config/info",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_nfts_minted_from_candy_machine(
+        self,
+        candy_machine_id,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "network": network.value,
+            "candy_machine_id": candy_machine_id
+        }
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine/nfts",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_candy_machine_id_from_nft(
+        self,
+        mint_address,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "network": network.value,
+            "mint_address": mint_address
+        }
+        response = self._request(
+            payload=payload,
+            endpoint="solana/nft/candy_machine_id",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_account_info(
+        self,
+        public_key,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        payload = {
+            "network": network.value,
+            "public_key": public_key
+        }
+        response = self._request(
+            payload=payload,
+            endpoint="solana/account",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
