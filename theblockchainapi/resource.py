@@ -172,7 +172,7 @@ class TheBlockchainAPIResource:
         response = self._request(
             payload=payload,
             endpoint="solana/wallet/balance",
-            request_method=self.__RequestMethod.GET
+            request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -190,14 +190,9 @@ class TheBlockchainAPIResource:
         :param network:
         :return:
         """
-        payload = {
-            "public_key": public_key,
-            "network": network.value
-        }
-
         response = self._request(
-            payload=payload,
-            endpoint="solana/wallet/nfts",
+            payload=dict(),
+            endpoint=f"solana/wallet/{network.value}/{public_key}/nfts",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
@@ -366,14 +361,9 @@ class TheBlockchainAPIResource:
         :param network:
         :return:
         """
-        payload = {
-            "mint_address": mint_address,
-            "network": network.value
-        }
-
         response = self._request(
-            payload=payload,
-            endpoint="solana/nft",
+            payload=dict(),
+            endpoint=f"solana/nft/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
@@ -533,11 +523,8 @@ class TheBlockchainAPIResource:
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         response = self._request(
-            payload={
-                "tx_signature": tx_signature,
-                "network": network.value
-            },
-            endpoint="solana/transaction",
+            payload=dict(),
+            endpoint=f"solana/transaction/{network.value}/{tx_signature}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
@@ -603,13 +590,9 @@ class TheBlockchainAPIResource:
         public_key,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
-        payload = {
-            "network": network.value,
-            "public_key": public_key
-        }
         response = self._request(
-            payload=payload,
-            endpoint="solana/account",
+            payload=dict(),
+            endpoint=f"solana/account/{network.value}/{public_key}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
