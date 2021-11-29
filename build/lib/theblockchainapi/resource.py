@@ -4,6 +4,18 @@ import requests
 from typing import Optional, List
 
 
+class SolanaMintAddresses:
+
+    USDC_MAINNET_BETA = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    MANGO_MAINNET_BETA = "MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac"
+    SERUM_MAINNET_BETA = "SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt"
+    RAYDIUM_MAINNET_BETA = "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"
+    WRAPPED_SOL_MAINNET_BETA = "So11111111111111111111111111111111111111112"
+    ATLAS_MAINNET_BETA = "ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx"
+
+    # Make a pull request and add more! That would be cool.
+
+
 class SolanaNetwork(Enum):
     DEVNET = "devnet"
     MAINNET_BETA = "mainnet-beta"
@@ -91,7 +103,6 @@ class TheBlockchainAPIResource:
 
     def get_api_activity_history(self) -> dict:
         """
-        https://docs.theblockchainapi.com/#tag/Activity/paths/~1v1~1account~1activity/get
         :return: The API activity history
         """
         response = self._request(
@@ -106,7 +117,7 @@ class TheBlockchainAPIResource:
     def generate_secret_key(self) -> str:
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1secret_recovery_phrase/post
+        https://docs.theblockchainapi.com/#operation/solanaGenerateSecretRecoveryPhrase
         :return:
         """
         response = self._request(
@@ -127,7 +138,7 @@ class TheBlockchainAPIResource:
         """
         Derives a public key given the info.
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1public_key/post
+        https://docs.theblockchainapi.com/#operation/solanaDerivePublicKey
         :param secret_recovery_phrase:
         :param derivation_path: Derivation path default matches the CLI. Use "m/44/501/0/0" to match Phantom.
         :param passphrase:
@@ -153,14 +164,16 @@ class TheBlockchainAPIResource:
         self,
         public_key: str,
         unit: SolanaCurrencyUnit = SolanaCurrencyUnit.LAMPORT,
-        network: SolanaNetwork = SolanaNetwork.DEVNET
+        network: SolanaNetwork = SolanaNetwork.DEVNET,
+        mint_address: str = None
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1balance/get
+        https://docs.theblockchainapi.com/#operation/solanaGetBalance
         :param public_key:
-        :param unit:
+        :param unit: Ignored if `mint_address` provided
         :param network:
+        :param mint_address:
         :return:
         """
         payload = {
@@ -168,15 +181,38 @@ class TheBlockchainAPIResource:
             "unit": unit.value,
             "network": network.value
         }
+        if mint_address is not None:
+            payload['mint_address'] = mint_address
 
         response = self._request(
             payload=payload,
             endpoint="solana/wallet/balance",
-            request_method=self.__RequestMethod.GET
+            request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response
+
+    def get_wallet_token_holdings(
+        self,
+        public_key: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ) -> list:
+        """
+        More info:
+        https://docs.theblockchainapi.com/#operation/solanaGetTokensBelongingToWallet
+        :param public_key:
+        :param network:
+        :return:
+        """
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/wallet/{network.value}/{public_key}/tokens",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['nfts_owned']
 
     def get_nfts_belonging_to_address(
         self,
@@ -185,56 +221,97 @@ class TheBlockchainAPIResource:
     ) -> list:
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1nfts/get
+        https://docs.theblockchainapi.com/#operation/solanaGetNFTsBelongingToWallet
         :param public_key:
         :param network:
         :return:
         """
-        payload = {
-            "public_key": public_key,
-            "network": network.value
-        }
-
         response = self._request(
-            payload=payload,
-            endpoint="solana/wallet/nfts",
+            payload=dict(),
+            endpoint=f"solana/wallet/{network.value}/{public_key}/nfts",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['nfts_owned']
 
-    def derive_associated_token_account_address(
+    def get_is_candy_machine(
         self,
-        token_address: str,
-        secret_recovery_phrase: str,
-        derivation_path: Optional[str] = None,
-        passphrase: str = str(),
+        public_key: str,
         network: SolanaNetwork = SolanaNetwork.DEVNET
-    ) -> str:
+    ):
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1associated_token_account/post
-        :param token_address:
-        :param secret_recovery_phrase:
-        :param derivation_path: Derivation path default matches the CLI. Use "m/44/501/0/0" to match Phantom.
-        :param passphrase:
+        https://docs.theblockchainapi.com/#operation/solanaGetAccountIsCandyMachine
+        :param public_key:
         :param network:
         :return:
         """
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/account/{network.value}/{public_key}/is_candy_machine",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['is_candy_machine']
+
+    def get_is_nft(
+        self,
+        public_key: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        """
+        More info:
+        https://docs.theblockchainapi.com/#operation/solanaGetAccountIsNFT
+        :param public_key:
+        :param network:
+        :return:
+        """
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/account/{network.value}/{public_key}/is_nft",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['is_nft']
+
+    def get_nft_owner(
+        self,
+        mint_address: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/nft/{network.value}/{mint_address}/owner",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response['nft_owner']
+
+    def get_associated_token_account_address(
+        self,
+        mint_address: str,
+        public_key: str
+    ) -> str:
+        """
+        More info:
+        https://docs.theblockchainapi.com/#operation/solanaDeriveAssociatedTokenAccountAddress
+        :param mint_address: The mint address of the NFT or SPL token
+        :param public_key: The public key of the account that owns the associated token account address
+        :return:
+        """
         payload = {
-            "token_address": token_address,
-            "secret_recovery_phrase": secret_recovery_phrase,
-            "passphrase": passphrase,
-            "network": network.value
+            "mint_address": mint_address,
+            "public_key": public_key
         }
-        if derivation_path is not None:
-            payload["derivation_path"] = derivation_path
 
         response = self._request(
             payload=payload,
-            endpoint="solana/wallet/associated_token_account",
-            request_method=self.__RequestMethod.POST
+            endpoint=f"solana/wallet/{public_key}/associated_token_account/{mint_address}",
+            request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -252,7 +329,7 @@ class TheBlockchainAPIResource:
     ) -> str:
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1transfer/post
+        https://docs.theblockchainapi.com/#operation/solanaTransfer
         :param secret_recovery_phrase:
         :param recipient_address:
         :param token_address: If not provided, defaults to transferring SOL
@@ -303,7 +380,7 @@ class TheBlockchainAPIResource:
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft/post
+        https://docs.theblockchainapi.com/#operation/solanaCreateNFT
         :param secret_recovery_phrase:
         :param derivation_path: Derivation path default matches the CLI. Use "m/44/501/0/0" to match Phantom.
         :param passphrase:
@@ -361,19 +438,14 @@ class TheBlockchainAPIResource:
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft/get
+        https://docs.theblockchainapi.com/#operation/solanaGetNFT
         :param mint_address:
         :param network:
         :return:
         """
-        payload = {
-            "mint_address": mint_address,
-            "network": network.value
-        }
-
         response = self._request(
-            payload=payload,
-            endpoint="solana/nft",
+            payload=dict(),
+            endpoint=f"solana/nft/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
@@ -384,7 +456,8 @@ class TheBlockchainAPIResource:
         self
     ) -> dict:
         """
-        More info: https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft~1mint~1fee/get
+        More info:
+        https://docs.theblockchainapi.com/#operation/solanaGetNFTMintFee
         :return:
         """
         response = self._request(
@@ -403,7 +476,7 @@ class TheBlockchainAPIResource:
         """
         Get an airdrop of 0.015 SOL on the devnet
         More info:
-        https://docs.theblockchainapi.com/#tag/Solana-Wallet/paths/~1v1~1solana~1wallet~1airdrop/post
+        https://docs.theblockchainapi.com/#operation/solanaGetAirdrop
         :param recipient_address:
         :return: Transaction signature
         """
@@ -425,7 +498,7 @@ class TheBlockchainAPIResource:
     ):
         """
         More Info:
-        https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft~1candy_machine~1info/post
+        https://docs.theblockchainapi.com/#operation/solanaGetCandyMachineDetails
         :param candy_machine_id:
         :param network:
         :return:
@@ -445,7 +518,7 @@ class TheBlockchainAPIResource:
 
     def mint_from_candy_machine(
         self,
-        candy_machine_id: str,
+        config_address: str,
         secret_recovery_phrase: str,
         derivation_path: Optional[str] = None,
         passphrase: str = str(),
@@ -453,8 +526,11 @@ class TheBlockchainAPIResource:
     ):
         """
         Mint Info:
-        https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft~1candy_machine~1mint/post
-        :param candy_machine_id:
+        https://docs.theblockchainapi.com/#operation/solanaMintFromCandyMachine
+        :param config_address: The config address of the candy machine.
+        You can retrieve this if you have the candy machine ID using
+        this endpoint (https://docs.theblockchainapi.com/#operation/solanaGetCandyMachineDetails)
+        and retrieving the config_address from the response..
         :param secret_recovery_phrase:
         :param derivation_path:
         :param passphrase:
@@ -466,7 +542,7 @@ class TheBlockchainAPIResource:
             "secret_recovery_phrase": secret_recovery_phrase,
             "network": network.value,
             "passphrase": passphrase,
-            "candy_machine_id": candy_machine_id
+            "config_address": config_address
         }
         if derivation_path is not None:
             payload['derivation_path'] = derivation_path
@@ -488,7 +564,7 @@ class TheBlockchainAPIResource:
     ):
         """
         Mint Info:
-        https://docs.theblockchainapi.com/#tag/Solana-NFT/paths/~1v1~1solana~1nft~1candy_machine/post
+        https://docs.theblockchainapi.com/#operation/solanaCreateTestCandyMachine
         :param secret_recovery_phrase:
         :param derivation_path:
         :param passphrase:
@@ -514,7 +590,7 @@ class TheBlockchainAPIResource:
     def get_task(self, task_id: str):
         """
         More Info:
-        https://docs.theblockchainapi.com/#tag/Task
+        https://docs.theblockchainapi.com/#operation/getTask
         :param task_id:
         :return:
         """
@@ -532,12 +608,15 @@ class TheBlockchainAPIResource:
         tx_signature: str,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
+        """
+        https://docs.theblockchainapi.com/#operation/solanaGetTransaction
+        :param tx_signature:
+        :param network:
+        :return:
+        """
         response = self._request(
-            payload={
-                "tx_signature": tx_signature,
-                "network": network.value
-            },
-            endpoint="solana/transaction",
+            payload=dict(),
+            endpoint=f"solana/transaction/{network.value}/{tx_signature}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
@@ -549,6 +628,12 @@ class TheBlockchainAPIResource:
         config_address,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
+        """
+        https://docs.theblockchainapi.com/#operation/solanaGetCandyMachineConfigurationDetails
+        :param config_address:
+        :param network:
+        :return:
+        """
         payload = {
             "network": network.value,
             "config_address": config_address
@@ -567,6 +652,12 @@ class TheBlockchainAPIResource:
         candy_machine_id,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
+        """
+        https://docs.theblockchainapi.com/#operation/solanaGetNFTsMintedFromCandyMachine
+        :param candy_machine_id:
+        :param network:
+        :return:
+        """
         payload = {
             "network": network.value,
             "candy_machine_id": candy_machine_id
@@ -585,6 +676,12 @@ class TheBlockchainAPIResource:
         mint_address,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
+        """
+        https://docs.theblockchainapi.com/#operation/solanaGetNFTsCandyMachineId
+        :param mint_address:
+        :param network:
+        :return:
+        """
         payload = {
             "network": network.value,
             "mint_address": mint_address
@@ -603,13 +700,15 @@ class TheBlockchainAPIResource:
         public_key,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
-        payload = {
-            "network": network.value,
-            "public_key": public_key
-        }
+        """
+        https://docs.theblockchainapi.com/#operation/solanaGetAccount
+        :param public_key:
+        :param network:
+        :return:
+        """
         response = self._request(
-            payload=payload,
-            endpoint="solana/account",
+            payload=dict(),
+            endpoint=f"solana/account/{network.value}/{public_key}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
