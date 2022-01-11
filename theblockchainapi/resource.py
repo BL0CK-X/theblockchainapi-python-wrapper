@@ -126,7 +126,7 @@ class SolanaWallet:
 
 class TheBlockchainAPIResource:
 
-    __url = "https://api.theblockchainapi.com/v1/"
+    __url = "https://api.blockchainapi.com/v1/"
     __timeout = 120
 
     class __RequestMethod(Enum):
@@ -138,7 +138,7 @@ class TheBlockchainAPIResource:
     def __init__(self, api_key_id: str, api_secret_key: str):
         """
 
-        To get an API key pair, go to https://dashboard.theblockchainapi.com/.
+        To get an API key pair, go to https://dashboard.blockchainapi.com/.
 
         Sign in and then click on the "API KEYS" tab.
 
@@ -216,7 +216,7 @@ class TheBlockchainAPIResource:
     def generate_secret_key(self) -> str:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGenerateSecretRecoveryPhrase
+        https://docs.blockchainapi.com/#operation/solanaGenerateSecretRecoveryPhrase
         :return:
         """
         response = self._request(
@@ -231,7 +231,7 @@ class TheBlockchainAPIResource:
     def generate_private_key(self) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGeneratePrivateKey
+        https://docs.blockchainapi.com/#operation/solanaGeneratePrivateKey
         :return:
         """
         response = self._request(
@@ -247,7 +247,7 @@ class TheBlockchainAPIResource:
         """
         Derives a public key given the info.
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaDerivePublicKey
+        https://docs.blockchainapi.com/#operation/solanaDerivePublicKey
         :param wallet:
         :return:
         """
@@ -264,7 +264,7 @@ class TheBlockchainAPIResource:
     def derive_private_key(self, wallet: SolanaWallet) -> str:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaDerivePrivateKey
+        https://docs.blockchainapi.com/#operation/solanaDerivePrivateKey
         :return:
         """
         response = self._request(
@@ -285,7 +285,7 @@ class TheBlockchainAPIResource:
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetBalance
+        https://docs.blockchainapi.com/#operation/solanaGetBalance
         :param public_key:
         :param unit: Ignored if `mint_address` provided
         :param network:
@@ -318,7 +318,7 @@ class TheBlockchainAPIResource:
     ) -> list:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetTokensBelongingToWallet
+        https://docs.blockchainapi.com/#operation/solanaGetTokensBelongingToWallet
         :param public_key:
         :param include_nfts:
         :param include_zero_balance_holdings:
@@ -345,7 +345,7 @@ class TheBlockchainAPIResource:
     ) -> list:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetNFTsBelongingToWallet
+        https://docs.blockchainapi.com/#operation/solanaGetNFTsBelongingToWallet
         :param public_key:
         :param network:
         :return:
@@ -366,7 +366,7 @@ class TheBlockchainAPIResource:
     ):
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetAccountIsCandyMachine
+        https://docs.blockchainapi.com/#operation/solanaGetAccountIsCandyMachine
         :param public_key:
         :param network:
         :return:
@@ -387,7 +387,7 @@ class TheBlockchainAPIResource:
     ):
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetAccountIsNFT
+        https://docs.blockchainapi.com/#operation/solanaGetAccountIsNFT
         :param public_key:
         :param network:
         :return:
@@ -422,7 +422,7 @@ class TheBlockchainAPIResource:
     ) -> str:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaDeriveAssociatedTokenAccountAddress
+        https://docs.blockchainapi.com/#operation/solanaDeriveAssociatedTokenAccountAddress
         :param mint_address: The mint address of the NFT or SPL token
         :param public_key: The public key of the account that owns the associated token account address
         :return:
@@ -451,7 +451,7 @@ class TheBlockchainAPIResource:
     ) -> str:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaTransfer
+        https://docs.blockchainapi.com/#operation/solanaTransfer
         :param wallet:
         :param recipient_address:
         :param token_address: If not provided, defaults to transferring SOL
@@ -494,7 +494,7 @@ class TheBlockchainAPIResource:
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaCreateNFT
+        https://docs.blockchainapi.com/#operation/solanaCreateNFT
         :param wallet:
         :param network:
         :param mint_to_public_key: Assign ownership of the NFT after minting it
@@ -592,7 +592,7 @@ class TheBlockchainAPIResource:
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetNFT
+        https://docs.blockchainapi.com/#operation/solanaGetNFT
         :param mint_address:
         :param network:
         :return:
@@ -611,7 +611,7 @@ class TheBlockchainAPIResource:
     ) -> dict:
         """
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetNFTMintFee
+        https://docs.blockchainapi.com/#operation/solanaGetNFTMintFee
         :return:
         """
         response = self._request(
@@ -630,7 +630,7 @@ class TheBlockchainAPIResource:
         """
         Get an airdrop of 0.015 SOL on the devnet
         More info:
-        https://docs.theblockchainapi.com/#operation/solanaGetAirdrop
+        https://docs.blockchainapi.com/#operation/solanaGetAirdrop
         :param recipient_address:
         :return: Transaction signature
         """
@@ -655,7 +655,7 @@ class TheBlockchainAPIResource:
     ):
         """
         More Info:
-        https://docs.theblockchainapi.com/#operation/solanaGetCandyMachineDetails
+        https://docs.blockchainapi.com/#operation/solanaGetCandyMachineDetails
         :param candy_machine_id: The candy_machine_id. Same as config_address in v2.
         :param config_address: The config_address. Same as candy_machine_id in v2.
         :param uuid: The first six characters of config_address. Sometimes, you can only find the uuid.
@@ -692,10 +692,10 @@ class TheBlockchainAPIResource:
     ):
         """
         Mint Info:
-        https://docs.theblockchainapi.com/#operation/solanaMintFromCandyMachine
+        https://docs.blockchainapi.com/#operation/solanaMintFromCandyMachine
         :param config_address: The config address of the candy machine.
         You can retrieve this if you have the candy machine ID using
-        this endpoint (https://docs.theblockchainapi.com/#operation/solanaGetCandyMachineDetails)
+        this endpoint (https://docs.blockchainapi.com/#operation/solanaGetCandyMachineDetails)
         and retrieving the config_address from the response..
         :param wallet:
         :param candy_machine_contract_version:
@@ -787,7 +787,7 @@ class TheBlockchainAPIResource:
     ):
         """
         Mint Info:
-        https://docs.theblockchainapi.com/#operation/solanaCreateTestCandyMachine
+        https://docs.blockchainapi.com/#operation/solanaCreateTestCandyMachine
         :param wallet:
         :param network:
         :param include_gatekeeper:
@@ -816,7 +816,7 @@ class TheBlockchainAPIResource:
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
-        https://docs.theblockchainapi.com/#operation/solanaGetTransaction
+        https://docs.blockchainapi.com/#operation/solanaGetTransaction
         :param tx_signature:
         :param network:
         :return:
@@ -840,7 +840,7 @@ class TheBlockchainAPIResource:
 
         See the returned attributes `all_nfts`, `unminted_nfts`, and `minted_nfts`
 
-        https://docs.theblockchainapi.com/#operation/solanaGetAllNFTsFromCandyMachine
+        https://docs.blockchainapi.com/#operation/solanaGetAllNFTsFromCandyMachine
         :param candy_machine_id:
         :param network:
         :return:
@@ -860,7 +860,7 @@ class TheBlockchainAPIResource:
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
-        https://docs.theblockchainapi.com/#operation/solanaGetNFTsCandyMachineId
+        https://docs.blockchainapi.com/#operation/solanaGetNFTsCandyMachineId
         :param mint_address:
         :param network:
         :return:
@@ -884,7 +884,7 @@ class TheBlockchainAPIResource:
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
-        https://docs.theblockchainapi.com/#operation/solanaGetAccount
+        https://docs.blockchainapi.com/#operation/solanaGetAccount
         :param public_key:
         :param network:
         :return:
@@ -904,7 +904,7 @@ class TheBlockchainAPIResource:
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
-        https://docs.theblockchainapi.com/#operation/solanaGetAccount
+        https://docs.blockchainapi.com/#operation/solanaGetAccount
         :param public_key:
         :param network:
         :return:
