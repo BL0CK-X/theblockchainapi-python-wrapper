@@ -928,7 +928,7 @@ class TheBlockchainAPIResource:
         """
         response = self._request(
             payload=dict(),
-            endpoint=f"solana/nft/marketplaces/listing/{network}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/listing/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
@@ -954,7 +954,7 @@ class TheBlockchainAPIResource:
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        return response
+        return response['transaction_signature']
 
     def delist_nft_from_solsea(
         self,
@@ -973,7 +973,7 @@ class TheBlockchainAPIResource:
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        return response
+        return response['transaction_signature']
 
     def buy_nft_from_solsea(
         self,
@@ -994,4 +994,4 @@ class TheBlockchainAPIResource:
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        return response
+        return response['transaction_signature']
