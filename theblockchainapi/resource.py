@@ -917,3 +917,81 @@ class TheBlockchainAPIResource:
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response
+
+    def get_nft_listing(
+        self,
+        mint_address: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        """
+        https://docs.blockchainapi.com/#operation/solanaGetAccount
+        """
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/nft/marketplaces/listing/{network}/{mint_address}",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def list_nft_on_solsea(
+        self,
+        mint_address: str,
+        wallet: SolanaWallet,
+        nft_price: int,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        """
+        https://docs.blockchainapi.com/#operation/solanaGetAccount
+        """
+        payload = wallet.get_formatted_request_payload()
+        payload['nft_price'] = nft_price
+        response = self._request(
+            payload=payload,
+            endpoint=f"solana/nft/marketplaces/solsea/list/{network.value}/{mint_address}",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def delist_nft_from_solsea(
+        self,
+        mint_address: str,
+        wallet: SolanaWallet,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        """
+        https://docs.blockchainapi.com/#operation/solanaGetAccount
+        """
+        payload = wallet.get_formatted_request_payload()
+        response = self._request(
+            payload=payload,
+            endpoint=f"solana/nft/marketplaces/solsea/delist/{network.value}/{mint_address}",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def buy_nft_from_solsea(
+        self,
+        mint_address: str,
+        wallet: SolanaWallet,
+        nft_price: int,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ):
+        """
+        https://docs.blockchainapi.com/#operation/solanaGetAccount
+        """
+        payload = wallet.get_formatted_request_payload()
+        payload['nft_price'] = nft_price
+        response = self._request(
+            payload=payload,
+            endpoint=f"solana/nft/marketplaces/solsea/buy/{network.value}/{mint_address}",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
