@@ -42,6 +42,11 @@ class SearchMethod(Enum):
     EXACT_MATCH = "exact_match"
 
 
+class SolanaExchange(Enum):
+    MAGIC_EDEN = "magic-eden"
+    SOLSEA = "solsea"
+
+
 class DerivationPath(Enum):
 
     CLI_PATH = ""
@@ -935,61 +940,85 @@ class TheBlockchainAPIResource:
             raise Exception(response['error_message'])
         return response
 
-    def list_nft_on_solsea(
+    def list_nft(
         self,
         mint_address: str,
         wallet: SolanaWallet,
         nft_price: int,
+        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
+        if not isinstance(exchange, SolanaExchange):
+            raise Exception(
+                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
+                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
+                f"use `from theblockchainapi import SolanaExchange`. "
+                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
+            )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/solsea/list/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/{exchange.value}/list/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['transaction_signature']
 
-    def delist_nft_from_solsea(
+    def delist_nft(
         self,
         mint_address: str,
         wallet: SolanaWallet,
+        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
+        if not isinstance(exchange, SolanaExchange):
+            raise Exception(
+                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
+                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
+                f"use `from theblockchainapi import SolanaExchange`. "
+                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
+            )
         payload = wallet.get_formatted_request_payload()
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/solsea/delist/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/{exchange.value}/delist/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['transaction_signature']
 
-    def buy_nft_from_solsea(
+    def buy_nft(
         self,
         mint_address: str,
         wallet: SolanaWallet,
         nft_price: int,
+        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
+        if not isinstance(exchange, SolanaExchange):
+            raise Exception(
+                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
+                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
+                f"use `from theblockchainapi import SolanaExchange`. "
+                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
+            )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/solsea/buy/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/{exchange.value}/buy/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
