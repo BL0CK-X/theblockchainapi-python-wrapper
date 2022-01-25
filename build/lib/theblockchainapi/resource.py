@@ -42,6 +42,11 @@ class SearchMethod(Enum):
     EXACT_MATCH = "exact_match"
 
 
+class SolanaExchange(Enum):
+    MAGIC_EDEN = "magic-eden"
+    SOLSEA = "solsea"
+
+
 class DerivationPath(Enum):
 
     CLI_PATH = ""
@@ -159,7 +164,7 @@ class TheBlockchainAPIResource:
             'Language': 'Python'
         }
 
-    def _request(self, payload, endpoint, request_method, files=None, headers=None):
+    def _request(self, endpoint, request_method, files=None, headers=None, payload=None, params=None):
         """
         Makes an API request.
         :param payload: the payload containing the parameters
@@ -172,28 +177,20 @@ class TheBlockchainAPIResource:
         if headers is None:
             headers = self._get_headers()
 
-        if len(payload) > 0:
-            payload = json.dumps(payload)
-        else:
-            payload = None
+        args = {
+            'method': request_method.value,
+            'headers': headers,
+            'url': self.__url + endpoint,
+            'timeout': self.__timeout
+        }
+        if files is not None:
+            args['files'] = files
+        if payload is not None and len(payload) > 0:
+            args['data'] = json.dumps(payload)
+        if params is not None:
+            args['params'] = params
 
-        if files is None:
-            r = requests.request(
-                request_method.value,
-                url=self.__url + endpoint,
-                data=payload,
-                headers=headers,
-                timeout=self.__timeout
-            )
-        else:
-            r = requests.request(
-                request_method.value,
-                url=self.__url + endpoint,
-                data=payload,
-                files=files,
-                headers=headers,
-                timeout=self.__timeout
-            )
+        r = requests.request(**args)
         try:
             json_content = json.loads(r.content)
         except json.decoder.JSONDecodeError:
@@ -326,7 +323,7 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload={
+            params={
                 'include_nfts': include_nfts,
                 'include_zero_balance_holdings': include_zero_balance_holdings
             },
@@ -351,13 +348,12 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/wallet/{network.value}/{public_key}/nfts",
             request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        return response['nfts_owned']
+        return response['nfts_metadata']
 
     def get_is_candy_machine(
         self,
@@ -372,7 +368,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/account/{network.value}/{public_key}/is_candy_machine",
             request_method=self.__RequestMethod.GET
         )
@@ -393,7 +388,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/account/{network.value}/{public_key}/is_nft",
             request_method=self.__RequestMethod.GET
         )
@@ -407,7 +401,6 @@ class TheBlockchainAPIResource:
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/nft/{network.value}/{mint_address}/owner",
             request_method=self.__RequestMethod.GET
         )
@@ -433,7 +426,7 @@ class TheBlockchainAPIResource:
         }
 
         response = self._request(
-            payload=payload,
+            params=payload,
             endpoint=f"solana/wallet/{public_key}/associated_token_account/{mint_address}",
             request_method=self.__RequestMethod.GET
         )
@@ -598,7 +591,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/nft/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.GET
         )
@@ -615,7 +607,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint="solana/nft/mint/fee",
             request_method=self.__RequestMethod.GET
         )
@@ -725,7 +716,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint="solana/nft/candy_machine/list",
             request_method=self.__RequestMethod.GET
         )
@@ -822,7 +812,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/transaction/{network.value}/{tx_signature}",
             request_method=self.__RequestMethod.GET
         )
@@ -890,7 +879,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/account/{network.value}/{public_key}",
             request_method=self.__RequestMethod.GET
         )
@@ -910,7 +898,6 @@ class TheBlockchainAPIResource:
         :return:
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/spl-token/{network.value}/{public_key}",
             request_method=self.__RequestMethod.GET
         )
@@ -927,7 +914,6 @@ class TheBlockchainAPIResource:
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
         response = self._request(
-            payload=dict(),
             endpoint=f"solana/nft/marketplaces/listing/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.GET
         )
@@ -935,61 +921,85 @@ class TheBlockchainAPIResource:
             raise Exception(response['error_message'])
         return response
 
-    def list_nft_on_solsea(
+    def list_nft(
         self,
         mint_address: str,
         wallet: SolanaWallet,
         nft_price: int,
+        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
+        if not isinstance(exchange, SolanaExchange):
+            raise Exception(
+                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
+                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
+                f"use `from theblockchainapi import SolanaExchange`. "
+                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
+            )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/solsea/list/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/{exchange.value}/list/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['transaction_signature']
 
-    def delist_nft_from_solsea(
+    def delist_nft(
         self,
         mint_address: str,
         wallet: SolanaWallet,
+        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
+        if not isinstance(exchange, SolanaExchange):
+            raise Exception(
+                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
+                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
+                f"use `from theblockchainapi import SolanaExchange`. "
+                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
+            )
         payload = wallet.get_formatted_request_payload()
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/solsea/delist/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/{exchange.value}/delist/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['transaction_signature']
 
-    def buy_nft_from_solsea(
+    def buy_nft(
         self,
         mint_address: str,
         wallet: SolanaWallet,
         nft_price: int,
+        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
+        if not isinstance(exchange, SolanaExchange):
+            raise Exception(
+                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
+                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
+                f"use `from theblockchainapi import SolanaExchange`. "
+                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
+            )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/solsea/buy/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/{exchange.value}/buy/{network.value}/{mint_address}",
             request_method=self.__RequestMethod.POST
         )
         if 'error_message' in response:
