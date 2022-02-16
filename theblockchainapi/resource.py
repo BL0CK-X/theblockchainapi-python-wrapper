@@ -436,28 +436,51 @@ class TheBlockchainAPIResource:
 
     def transfer(
         self,
-        wallet: SolanaWallet,
+        wallet: Optional[SolanaWallet],
         recipient_address: str,
         token_address: Optional[str] = None,
         network: SolanaNetwork = SolanaNetwork.DEVNET,
-        amount: str = "1"
+        amount: str = "1",
+        fee_payer_wallet: Optional[SolanaWallet] = None,
+        sender_public_key: Optional[str] = None,
+        return_compiled_transaction: bool = False
     ) -> str:
         """
         More info:
         https://docs.blockchainapi.com/#operation/solanaTransfer
-        :param wallet:
-        :param recipient_address:
+        :param wallet: The source of the transfer
+        :param recipient_address: The recipient of the transfer
         :param token_address: If not provided, defaults to transferring SOL
-        :param network:
-        :param amount:
+        :param network: The network, e.g. mainnet-beta or devnet
+        :param amount: The amount to transfer
+        :param fee_payer_wallet: OPTIONAL: The fee payer of the transaction.
+        The default is the wallet from which the transfer is occurring
+        :param sender_public_key: OPTIONAL: The public key of the sender. You do NOT have to specify this if are
+        providing a value for `wallet`. If you set `return_compiled_transaction` to True, then this will compile the
+        transaction using the `sender_public_key` you provided. You can then sign and send it. You might want to do
+        this for security purposes
+        :param return_compiled_transaction: OPTIONAL: Whether or not to simply return the compiled transaction rather
+        than actually submitting it the blockchain. By default,
         :return:
         """
-        payload = wallet.get_formatted_request_payload()
+        payload = dict()
+
+        if wallet is not None:
+            payload = wallet.get_formatted_request_payload()
+
         payload["network"] = network.value
         payload["amount"] = amount
         payload["recipient_address"] = recipient_address
+        payload["return_compiled_transaction"] = return_compiled_transaction
+
+        if sender_public_key is not None:
+            payload["sender_public_key"] = sender_public_key
+
         if token_address is not None:
             payload["token_address"] = token_address
+
+        if fee_payer_wallet is not None:
+            payload["fee_payer_wallet"] = fee_payer_wallet.get_formatted_request_payload()['wallet']
 
         response = self._request(
             payload=payload,
@@ -1005,3 +1028,47 @@ class TheBlockchainAPIResource:
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response['transaction_signature']
+
+    def get_nft_marketplace_analytics(
+        self,
+        mint_addresses: List[str],
+        start_time: Optional[int] = None,
+        end_time: Optional[int] = None
+    ):
+        if not isinstance(mint_addresses, list):
+            raise Exception("`mint_addresses` must be a list of mint addresses.")
+        payload = {
+            'mint_addresses': mint_addresses
+        }
+        if start_time is not None:
+            payload['start_time'] = start_time
+        if end_time is not None:
+            payload['end_time'] = end_time
+        response = self._request(
+            payload=payload,
+            endpoint=f"solana/nft/marketplaces/analytics",
+            request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_recent_nft_transactions(self):
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/nft/marketplaces/analytics/recent_transactions",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_nft_market_share(self):
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/nft/marketplaces/analytics/market_share",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
