@@ -1029,7 +1029,7 @@ class TheBlockchainAPIResource:
             raise Exception(response['error_message'])
         return response['transaction_signature']
 
-    def get_marketplace_analytics(
+    def get_nft_marketplace_analytics(
         self,
         mint_addresses: List[str],
         start_time: Optional[int] = None,
@@ -1048,6 +1048,26 @@ class TheBlockchainAPIResource:
             payload=payload,
             endpoint=f"solana/nft/marketplaces/analytics",
             request_method=self.__RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_recent_nft_transactions(self):
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/nft/marketplaces/analytics/recent_transactions",
+            request_method=self.__RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def get_nft_market_share(self):
+        response = self._request(
+            payload=dict(),
+            endpoint=f"solana/nft/marketplaces/analytics/market_share",
+            request_method=self.__RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
