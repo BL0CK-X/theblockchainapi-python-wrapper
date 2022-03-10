@@ -950,7 +950,8 @@ class TheBlockchainAPIResource:
         wallet: SolanaWallet,
         nft_price: int,
         exchange: SolanaExchange,
-        network: SolanaNetwork = SolanaNetwork.DEVNET
+        network: SolanaNetwork = SolanaNetwork.DEVNET,
+        list_on_me_v2: bool = False
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
@@ -964,6 +965,7 @@ class TheBlockchainAPIResource:
             )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
+        payload['list_on_me_v2'] = list_on_me_v2
         response = self._request(
             payload=payload,
             endpoint=f"solana/nft/marketplaces/{exchange.value}/list/{network.value}/{mint_address}",

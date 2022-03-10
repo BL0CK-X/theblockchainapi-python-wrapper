@@ -129,7 +129,7 @@ class SolanaWallet:
             raise Exception("Unknown error. Improperly initialized instance of `SolanaWallet`.")
 
 
-class TheBlockchainAPIResource:
+class APIResource:
 
     __url = "https://api.blockchainapi.com/v1/"
     __timeout = 120
@@ -140,7 +140,7 @@ class TheBlockchainAPIResource:
         PATCH = "PATCH"
         DELETE = "DELETE"
 
-    def __init__(self, api_key_id: str, api_secret_key: str):
+    def __init__(self, api_key_id: str, api_secret_key: str, timeout=None):
         """
 
         To get an API key pair, go to https://dashboard.blockchainapi.com/.
@@ -152,6 +152,14 @@ class TheBlockchainAPIResource:
         """
         self.__api_key_id = api_key_id
         self.__api_secret_key = api_secret_key
+        if timeout is not None:
+            if not isinstance(timeout, int):
+                raise Exception("`timeout` must be an integer")
+            if timeout < 1:
+                raise Exception("`timeout` must be at least 1 second.")
+            if timeout > 120:
+                raise Exception("`timeout` must be at most 120 second.")
+            self.__timeout = timeout
 
     def _get_headers(self):
         """
@@ -196,6 +204,9 @@ class TheBlockchainAPIResource:
         except json.decoder.JSONDecodeError:
             return r
         return json_content
+
+
+class TheBlockchainAPIResource(APIResource):
 
     def get_api_activity_history(self) -> dict:
         """
