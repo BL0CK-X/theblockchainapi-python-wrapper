@@ -30,7 +30,7 @@ class Specification:
 
     def get_dict(self):
         return {
-            'type': self.type_,
+            'type': self.type_.value,
             'name': self.name,
             'description': self.description,
             'required': self.required
@@ -83,7 +83,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="project" if project_id is None else f"project/{project_id}",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -135,7 +135,7 @@ class DeveloperProgramResource(APIResource):
         :return:
         """
         response = self._request(
-            payload=dict(), endpoint=f"project/{project_id}", request_method=self.__RequestMethod.GET
+            payload=dict(), endpoint=f"project/{project_id}", request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -148,7 +148,7 @@ class DeveloperProgramResource(APIResource):
         :return:
         """
         response = self._request(
-            payload=dict(), endpoint=f"project/{project_id}", request_method=self.__RequestMethod.DELETE
+            payload=dict(), endpoint=f"project/{project_id}", request_method=self._RequestMethod.DELETE
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -163,7 +163,7 @@ class DeveloperProgramResource(APIResource):
         :return:
         """
         response = self._request(
-            payload=dict(), endpoint=f"project/{project_id}/{version}", request_method=self.__RequestMethod.POST
+            payload=dict(), endpoint=f"project/{project_id}/{version}", request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -178,7 +178,7 @@ class DeveloperProgramResource(APIResource):
         :return:
         """
         response = self._request(
-            payload=dict(), endpoint=f"project/{project_id}/{version}", request_method=self.__RequestMethod.DELETE
+            payload=dict(), endpoint=f"project/{project_id}/{version}", request_method=self._RequestMethod.DELETE
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -208,9 +208,11 @@ class DeveloperProgramResource(APIResource):
             )
 
         response = self._request(
-            payload=dict(),
+            payload={
+                'platform': platform.system()
+            },
             endpoint=f"project/{project_id}/deploy/url",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
 
         def upload(result_: dict):
@@ -236,13 +238,16 @@ class DeveloperProgramResource(APIResource):
             # Check status
             while True:
                 status_ = self.get_project_deployment_status(project_id)
-                print(status['status'])
-                if status['status_code'] == 1:
+                print(status_['status'])
+                if status_['status_code'] == 1:
                     break
                 else:
                     print(f"Checking... ")
                     time.sleep(5)
             return status_
+
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
 
         status = upload(response)
 
@@ -259,7 +264,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint=f"project/{project_id}/deploy/status",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -273,7 +278,7 @@ class DeveloperProgramResource(APIResource):
         :return:
         """
         response = self._request(
-            payload=dict(), endpoint=f"project/{project_id}/stats", request_method=self.__RequestMethod.GET
+            payload=dict(), endpoint=f"project/{project_id}/stats", request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -286,7 +291,7 @@ class DeveloperProgramResource(APIResource):
         :return:
         """
         response = self._request(
-            payload=dict(), endpoint=f"project/list", request_method=self.__RequestMethod.GET)
+            payload=dict(), endpoint=f"project/list", request_method=self._RequestMethod.GET)
         if 'error_message' in response:
             raise Exception(response['error_message'])
         return response
@@ -302,7 +307,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint=f"project/{project_id}/{version}/documentation",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -349,7 +354,7 @@ class DeveloperProgramResource(APIResource):
             'readable_name': readable_name,
             'operation_id': operation_id,
             'description': description,
-            'credits_': credits_,
+            'credits': credits_,
             'group_name': group_name,
             'input_specification': [],
             'input_examples': input_examples,
@@ -369,7 +374,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint=f"endpoint",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -397,7 +402,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint=f"endpoint/metadata",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -425,7 +430,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint=f"endpoint/delete",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -440,7 +445,7 @@ class DeveloperProgramResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint=f"endpoint/list",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])

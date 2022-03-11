@@ -30,7 +30,7 @@ class Specification:
 
     def get_dict(self):
         return {
-            'type': self.type_,
+            'type': self.type_.value,
             'name': self.name,
             'description': self.description,
             'required': self.required
@@ -208,7 +208,9 @@ class DeveloperProgramResource(APIResource):
             )
 
         response = self._request(
-            payload=dict(),
+            payload={
+                'platform': platform.system()
+            },
             endpoint=f"project/{project_id}/deploy/url",
             request_method=self._RequestMethod.POST
         )
@@ -236,13 +238,16 @@ class DeveloperProgramResource(APIResource):
             # Check status
             while True:
                 status_ = self.get_project_deployment_status(project_id)
-                print(status['status'])
-                if status['status_code'] == 1:
+                print(status_['status'])
+                if status_['status_code'] == 1:
                     break
                 else:
                     print(f"Checking... ")
                     time.sleep(5)
             return status_
+
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
 
         status = upload(response)
 
@@ -349,7 +354,7 @@ class DeveloperProgramResource(APIResource):
             'readable_name': readable_name,
             'operation_id': operation_id,
             'description': description,
-            'credits_': credits_,
+            'credits': credits_,
             'group_name': group_name,
             'input_specification': [],
             'input_examples': input_examples,

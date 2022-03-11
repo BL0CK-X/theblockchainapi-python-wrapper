@@ -134,7 +134,7 @@ class APIResource:
     __url = "https://api.blockchainapi.com/v1/"
     __timeout = 120
 
-    class __RequestMethod(Enum):
+    class _RequestMethod(Enum):
         GET = "GET"
         POST = "POST"
         PATCH = "PATCH"
@@ -161,7 +161,7 @@ class APIResource:
                 raise Exception("`timeout` must be at most 120 second.")
             self.__timeout = timeout
 
-    def _get_headers(self):
+    def __get_headers(self):
         """
         Get the headers with the appropriate authentication parameters
         :return: The headers
@@ -183,7 +183,7 @@ class APIResource:
         :return:
         """
         if headers is None:
-            headers = self._get_headers()
+            headers = self.__get_headers()
 
         args = {
             'method': request_method.value,
@@ -215,7 +215,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint="account/activity",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise response['error_message']
@@ -230,7 +230,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint="solana/wallet/generate/secret_recovery_phrase",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -245,7 +245,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint="solana/wallet/generate/private_key",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -263,7 +263,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=wallet.get_formatted_request_payload(),
             endpoint="solana/wallet/public_key",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -278,7 +278,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=wallet.get_formatted_request_payload(),
             endpoint="solana/wallet/private_key",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -311,7 +311,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/wallet/balance",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -339,7 +339,7 @@ class TheBlockchainAPIResource(APIResource):
                 'include_zero_balance_holdings': include_zero_balance_holdings
             },
             endpoint=f"solana/wallet/{network.value}/{public_key}/tokens",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -360,7 +360,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/wallet/{network.value}/{public_key}/nfts",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -380,7 +380,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/account/{network.value}/{public_key}/is_candy_machine",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -400,7 +400,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/account/{network.value}/{public_key}/is_nft",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -413,7 +413,7 @@ class TheBlockchainAPIResource(APIResource):
     ):
         response = self._request(
             endpoint=f"solana/nft/{network.value}/{mint_address}/owner",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -439,7 +439,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             params=payload,
             endpoint=f"solana/wallet/{public_key}/associated_token_account/{mint_address}",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -496,7 +496,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/wallet/transfer",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -565,7 +565,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -606,7 +606,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft/search",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -626,7 +626,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/nft/{network.value}/{mint_address}",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -642,7 +642,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint="solana/nft/mint/fee",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -664,7 +664,7 @@ class TheBlockchainAPIResource(APIResource):
                 "recipient_address": recipient_address
             },
             endpoint="solana/wallet/airdrop",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -702,7 +702,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft/candy_machine/metadata",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -738,7 +738,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft/candy_machine/mint",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -751,7 +751,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint="solana/nft/candy_machine/list",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -796,7 +796,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft/candy_machine/search",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -828,7 +828,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft/candy_machine",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -847,7 +847,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/transaction/{network.value}/{tx_signature}",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -871,7 +871,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload={},
             endpoint=f"solana/nft/candy_machine/{network.value}/{candy_machine_id}/nfts",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -895,7 +895,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint="solana/nft/candy_machine_id",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -914,7 +914,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/account/{network.value}/{public_key}",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -933,7 +933,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/spl-token/{network.value}/{public_key}",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -949,7 +949,7 @@ class TheBlockchainAPIResource(APIResource):
         """
         response = self._request(
             endpoint=f"solana/nft/marketplaces/listing/{network.value}/{mint_address}",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -961,8 +961,7 @@ class TheBlockchainAPIResource(APIResource):
         wallet: SolanaWallet,
         nft_price: int,
         exchange: SolanaExchange,
-        network: SolanaNetwork = SolanaNetwork.DEVNET,
-        list_on_me_v2: bool = False
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
@@ -976,11 +975,10 @@ class TheBlockchainAPIResource(APIResource):
             )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
-        payload['list_on_me_v2'] = list_on_me_v2
         response = self._request(
             payload=payload,
             endpoint=f"solana/nft/marketplaces/{exchange.value}/list/{network.value}/{mint_address}",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -1007,7 +1005,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint=f"solana/nft/marketplaces/{exchange.value}/delist/{network.value}/{mint_address}",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -1036,7 +1034,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint=f"solana/nft/marketplaces/{exchange.value}/buy/{network.value}/{mint_address}",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -1060,7 +1058,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=payload,
             endpoint=f"solana/nft/marketplaces/analytics",
-            request_method=self.__RequestMethod.POST
+            request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -1070,7 +1068,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint=f"solana/nft/marketplaces/analytics/recent_transactions",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
@@ -1080,7 +1078,7 @@ class TheBlockchainAPIResource(APIResource):
         response = self._request(
             payload=dict(),
             endpoint=f"solana/nft/marketplaces/analytics/market_share",
-            request_method=self.__RequestMethod.GET
+            request_method=self._RequestMethod.GET
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
