@@ -616,7 +616,7 @@ class TheBlockchainAPIResource(APIResource):
         self,
         mint_address: str,
         network: SolanaNetwork = SolanaNetwork.DEVNET
-    ) -> dict:
+    ) -> Optional[dict]:
         """
         More info:
         https://docs.blockchainapi.com/#operation/solanaGetNFT
@@ -630,6 +630,8 @@ class TheBlockchainAPIResource(APIResource):
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
+        if response.status_code == 404:
+            return None
         return response
 
     def get_nft_mint_fee(
