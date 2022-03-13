@@ -2,6 +2,7 @@ import json
 from enum import Enum
 import requests
 from typing import Optional, List, Union
+from requests import Response
 
 
 class SolanaMintAddresses:
@@ -630,8 +631,11 @@ class TheBlockchainAPIResource(APIResource):
         )
         if 'error_message' in response:
             raise Exception(response['error_message'])
-        if response.status_code == 404:
-            return None
+        if isinstance(response, Response):
+            if response.status_code == 404:
+                return None
+            else:
+                raise Exception("Unknown error: ", response.status_code)
         return response
 
     def get_nft_mint_fee(
