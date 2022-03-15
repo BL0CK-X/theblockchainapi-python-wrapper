@@ -65,19 +65,22 @@ class DeveloperProgramResource(APIResource):
     def __modify_project(
         self,
         project_id: Optional[str],
-        project_name: str,
-        project_description: str,
-        contact_email: str,
+        project_name: Optional[str],
+        project_description: Optional[str],
+        contact_email: Optional[str],
         groups: Optional[List[Group]]
     ):
-        payload = {
-            'project_name': project_name,
-            'project_description': project_description,
-            'contact_email': contact_email,
-            'groups': []
-        }
-        for group in groups:
-            payload['groups'].append(group.get_dict())
+        payload = dict()
+        if isinstance(groups, list):
+            payload['groups'] = []
+            for group in groups:
+                payload['groups'].append(group.get_dict())
+        if project_name is not None:
+            payload['project_name'] = project_name
+        if project_description is not None:
+            payload['project_description'] = project_description
+        if contact_email is not None:
+            payload['contact_email'] = contact_email
         if project_id is not None:
             payload['project_id'] = project_id
         response = self._request(
@@ -94,7 +97,7 @@ class DeveloperProgramResource(APIResource):
         project_name: str,
         project_description: str,
         contact_email: str,
-        groups: Optional[List[Group]]
+        groups: Optional[List[Group]] = None
     ):
         """
         More info available here: https://docs.blockchainapi.com/#operation/createProject
@@ -110,10 +113,10 @@ class DeveloperProgramResource(APIResource):
     def update_project(
         self,
         project_id: str,
-        project_name: str,
-        project_description: str,
-        contact_email: str,
-        groups: Optional[List[Group]]
+        project_name: Optional[str] = None,
+        project_description: Optional[str] = None,
+        contact_email: Optional[str] = None,
+        groups: Optional[List[Group]] = None
     ):
         """
         More info available here: https://docs.blockchainapi.com/#operation/updateProject

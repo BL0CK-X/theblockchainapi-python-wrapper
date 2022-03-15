@@ -347,6 +347,26 @@ class TheBlockchainAPIResource(APIResource):
 
         return response
 
+    def get_wallet_transactions(
+        self,
+        public_key: str,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
+    ) -> list:
+        """
+        More info:
+        https://docs.blockchainapi.com/#operation/solanaGetWalletTransactions
+        :param public_key:
+        :param network:
+        :return:
+        """
+        response = self._request(
+            endpoint=f"solana/wallet/{network.value}/{public_key}/transactions",
+            request_method=self._RequestMethod.GET
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
     def get_nfts_belonging_to_address(
         self,
         public_key: str,
