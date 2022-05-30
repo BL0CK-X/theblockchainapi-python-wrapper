@@ -12,6 +12,7 @@ class Type(Enum):
     ARRAY = 'array'
     NUMBER = 'number'
     STRING = 'string'
+    OBJECT = 'object'
 
 
 class Specification:
