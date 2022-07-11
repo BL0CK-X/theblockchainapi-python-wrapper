@@ -317,7 +317,7 @@ class DeveloperProgramResource(APIResource):
             raise Exception(response['error_message'])
         return response
 
-    def set_endpoint(
+    def create_endpoint(
         self,
         project_id: str,
         version: str,
@@ -375,6 +375,82 @@ class DeveloperProgramResource(APIResource):
             payload['input_specification'].append(spec.get_dict())
         for spec in output_specification:
             payload['output_specification'].append(spec.get_dict())
+        response = self._request(
+            payload=payload,
+            endpoint=f"endpoint",
+            request_method=self._RequestMethod.POST
+        )
+        if 'error_message' in response:
+            raise Exception(response['error_message'])
+        return response
+
+    def update_endpoint(
+        self,
+        project_id: str,
+        version: str,
+        path: str,
+        readable_name: Optional[str] = None,
+        operation_id: Optional[str] = None,
+        summary: Optional[str] = None,
+        description: Optional[str] = None,
+        credits_: Optional[int] = None,
+        group_name: Optional[str] = None,
+        input_specification: Optional[List[Specification]] = None,
+        input_examples: Optional[List[dict]] = None,
+        output_specification: Optional[List[Specification]] = None,
+        output_examples: Optional[List[dict]] = None
+    ):
+        """
+        More info available here: https://docs.blockchainapi.com/#operation/setEndpoint
+
+        :param project_id:
+        :param version:
+        :param path:
+        :param readable_name:
+        :param operation_id:
+        :param summary:
+        :param description:
+        :param credits_:
+        :param group_name:
+        :param input_specification:
+        :param input_examples:
+        :param output_specification:
+        :param output_examples:
+        :return:
+        """
+        payload = {
+            'project_id': project_id,
+            'version': version,
+            'path': path
+        }
+        if readable_name is not None:
+            payload['readable_name'] = readable_name
+        if operation_id is not None:
+            payload['operation_id'] = operation_id
+        if description is not None:
+            payload['description'] = description
+        if credits_ is not None:
+            payload['credits'] = credits_
+        if group_name is not None:
+            payload['group_name'] = group_name
+        if input_specification is not None:
+            payload['input_specification'] = []
+        if input_examples is not None:
+            payload['input_examples'] = input_examples
+            for spec in input_specification:
+                payload['input_specification'].append(spec.get_dict())
+        if output_specification is not None:
+            payload['output_specification'] = []
+            for spec in output_specification:
+                payload['output_specification'].append(spec.get_dict())
+        if output_examples is not None:
+            payload['output_examples'] = output_examples
+        if summary is not None:
+            payload['summary'] = summary
+        if description is not None:
+            payload['description'] = description
+        if group_name is not None:
+            payload['group_name'] = group_name
         response = self._request(
             payload=payload,
             endpoint=f"endpoint",

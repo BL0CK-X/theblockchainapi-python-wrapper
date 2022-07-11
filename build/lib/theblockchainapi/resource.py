@@ -17,12 +17,6 @@ class SolanaMintAddresses:
     # Make a pull request and add more! That would be cool.
 
 
-class SolanaCandyMachineContractVersion(Enum):
-    V1 = "v1"
-    V2 = "v2"
-    MAGIC_EDEN = "magic-eden-v1"
-
-
 class SolanaNetwork(Enum):
     DEVNET = "devnet"
     MAINNET_BETA = "mainnet-beta"
@@ -35,17 +29,12 @@ class SolanaCurrencyUnit(Enum):
 
 class SolanaNFTUploadMethod(Enum):
     S3 = "S3"
-    LINK = "LINK"
+    URI = "URI"
 
 
 class SearchMethod(Enum):
     BEGINS_WITH = "begins_with"
     EXACT_MATCH = "exact_match"
-
-
-class SolanaExchange(Enum):
-    MAGIC_EDEN = "magic-eden"
-    SOLSEA = "solsea"
 
 
 class DerivationPath(Enum):
@@ -94,25 +83,31 @@ class SolanaWallet:
         self.b58_private_key = b58_private_key
 
         if secret_recovery_phrase is not None:
-            if isinstance(derivation_path, DerivationPath):
-                derivation_path = derivation_path.value
-            elif not isinstance(derivation_path, str):
-                raise Exception("`derivation_path` must be a `str` or instance of the enum `DerivationPath`.")
 
-            if not isinstance(passphrase, str):
-                raise Exception("`passphrase` must be a `str`.")
+            if derivation_path is not None:
+                if isinstance(derivation_path, DerivationPath):
+                    derivation_path = derivation_path.value
+                elif not isinstance(derivation_path, str):
+                    raise Exception("`derivation_path` must be a `str` or instance of the enum `DerivationPath`.")
+
+            if passphrase is not None:
+                if not isinstance(passphrase, str):
+                    raise Exception("`passphrase` must be a `str`.")
 
         self.derivation_path = derivation_path
         self.passphrase = passphrase
 
     def get_formatted_request_payload(self) -> dict:
         if self.secret_recovery_phrase is not None:
+            wallet = {
+                'secret_recovery_phrase': self.secret_recovery_phrase
+            }
+            if self.derivation_path is not None:
+                wallet['derivation_path'] = self.derivation_path
+            if self.passphrase is not None:
+                wallet['passphrase'] = self.passphrase
             return {
-                'wallet': {
-                    'secret_recovery_phrase': self.secret_recovery_phrase,
-                    'derivation_path': self.derivation_path,
-                    'passphrase': self.passphrase
-                }
+                'wallet': wallet
             }
         elif self.private_key is not None:
             return {
@@ -132,8 +127,8 @@ class SolanaWallet:
 
 class APIResource:
 
-    __url = "https://api.blockchainapi.com/v1/"
-    __timeout = 120
+    _url = "https://api.blockchainapi.com/v1/"
+    __timeout = 300
 
     class _RequestMethod(Enum):
         GET = "GET"
@@ -158,7 +153,7 @@ class APIResource:
                 raise Exception("`timeout` must be an integer")
             if timeout < 1:
                 raise Exception("`timeout` must be at least 1 second.")
-            if timeout > 120:
+            if timeout > 300:
                 raise Exception("`timeout` must be at most 120 second.")
             self.__timeout = timeout
 
@@ -173,7 +168,15 @@ class APIResource:
             'Language': 'Python'
         }
 
-    def _request(self, endpoint, request_method, files=None, headers=None, payload=None, params=None):
+    def _request(
+        self,
+        endpoint,
+        request_method,
+        files=None,
+        headers=None,
+        payload=None,
+        params=None
+    ):
         """
         Makes an API request.
         :param payload: the payload containing the parameters
@@ -189,7 +192,7 @@ class APIResource:
         args = {
             'method': request_method.value,
             'headers': headers,
-            'url': self.__url + endpoint,
+            'url': self._url + endpoint,
             'timeout': self.__timeout
         }
         if files is not None:
@@ -207,20 +210,7 @@ class APIResource:
         return json_content
 
 
-class TheBlockchainAPIResource(APIResource):
-
-    def get_api_activity_history(self) -> dict:
-        """
-        :return: The API activity history
-        """
-        response = self._request(
-            payload=dict(),
-            endpoint="account/activity",
-            request_method=self._RequestMethod.POST
-        )
-        if 'error_message' in response:
-            raise response['error_message']
-        return response
+class SolanaAPIResource(APIResource):
 
     def generate_secret_key(self) -> str:
         """
@@ -528,12 +518,13 @@ class TheBlockchainAPIResource(APIResource):
         wallet: SolanaWallet,
         network: SolanaNetwork = SolanaNetwork.DEVNET,
         mint_to_public_key: str = None,
-        nft_name: str = str(),
-        nft_symbol: str = str(),
-        nft_description: str = str(),
-        nft_url: str = str(),
-        nft_metadata: Optional[dict] = None,
-        nft_upload_method: SolanaNFTUploadMethod = SolanaNFTUploadMethod.S3,
+        name: Optional[str] = None,
+        symbol: Optional[str] = None,
+        description: Optional[str] = None,
+        uri: Optional[str] = None,
+        image_url: Optional[str] = None,
+        uri_metadata: Optional[dict] = None,
+        upload_method: SolanaNFTUploadMethod = SolanaNFTUploadMethod.S3,
         creators: Optional[List[str]] = None,
         share: Optional[List[int]] = None,
         seller_fee_basis_points: int = 0,
@@ -546,12 +537,14 @@ class TheBlockchainAPIResource(APIResource):
         :param wallet:
         :param network:
         :param mint_to_public_key: Assign ownership of the NFT after minting it
-        :param nft_name: The name of the NFT
-        :param nft_symbol: The symbol of the NFT
-        :param nft_description: The description of the NFT
-        :param nft_url: The image of the NFT
-        :param nft_metadata: The metadata of the NFT
-        :param nft_upload_method: The upload method of the NFT. Upload the URL to S3 and embed it. Or save it directly
+        :param name: The name of the NFT
+        :param symbol: The symbol of the NFT
+        :param description: The description of the NFT
+        :param uri: The image of the NFT. Please see the description in the documentation
+         (docs.blockchainapi.com/#operation/solanaCreateNFT)
+        :param image_url: Please see the description in the documentation.
+        :param uri_metadata: The metadata of the NFT. Please see the description in the documentation.
+        :param upload_method: The upload method of the NFT. Please see the description in the documentation.
         to the NFT
         :param creators:
         :param share:
@@ -560,22 +553,24 @@ class TheBlockchainAPIResource(APIResource):
         :param is_master_edition:
         :return:
         """
-        if nft_metadata is None:
-            nft_metadata = dict()
+
         wallet_payload = wallet.get_formatted_request_payload()
         payload = {
             "network": network.value,
-            "nft_name": nft_name,
-            "nft_symbol": nft_symbol,
-            "nft_metadata": nft_metadata,
-            "nft_description": nft_description,
-            "nft_url": nft_url,
-            "nft_upload_method": nft_upload_method.value,
+            "name": name,
+            "symbol": symbol,
+            "description": description,
+            "uri": uri,
+            "image_url": image_url,
+            "upload_method": upload_method.value,
             "is_mutable": is_mutable,
             "is_master_edition": is_master_edition,
             "seller_fee_basis_points": seller_fee_basis_points
         }
+
         payload = {**payload, **wallet_payload}
+        if uri_metadata is not None:
+            payload['uri_metadata'] = uri_metadata
         if creators is not None:
             payload['creators'] = creators
         if share is not None:
@@ -701,7 +696,6 @@ class TheBlockchainAPIResource(APIResource):
         candy_machine_id: Optional[str] = None,
         config_address: Optional[str] = None,
         uuid: Optional[str] = None,
-        candy_machine_contract_version: SolanaCandyMachineContractVersion = SolanaCandyMachineContractVersion.V1,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
@@ -710,14 +704,12 @@ class TheBlockchainAPIResource(APIResource):
         :param candy_machine_id: The candy_machine_id. Same as config_address in v2.
         :param config_address: The config_address. Same as candy_machine_id in v2.
         :param uuid: The first six characters of config_address. Sometimes, you can only find the uuid.
-        :param candy_machine_contract_version: The version of the candy machine you're querying. If you're querying v1
-        but the candy machine is v2, then you will get a not found error, so the version is important.
         :param network: e.g., mainnet-beta, devnet
         :return:
         """
         payload = {
             "network": network.value,
-            "candy_machine_contract_version": candy_machine_contract_version.value
+            "candy_machine_contract_version": "v2"
         }
         if candy_machine_id is not None:
             payload['candy_machine_id'] = candy_machine_id
@@ -738,7 +730,6 @@ class TheBlockchainAPIResource(APIResource):
         self,
         config_address: str,
         wallet: SolanaWallet,
-        candy_machine_contract_version: SolanaCandyMachineContractVersion = SolanaCandyMachineContractVersion.V1,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
@@ -749,7 +740,6 @@ class TheBlockchainAPIResource(APIResource):
         this endpoint (https://docs.blockchainapi.com/#operation/solanaGetCandyMachineDetails)
         and retrieving the config_address from the response..
         :param wallet:
-        :param candy_machine_contract_version:
         :param network:
         :return: A task_id. Use the `get_task` function to retrieve the result once this task has completed processing.
         You can poll the `get_task` function to see results.
@@ -758,7 +748,7 @@ class TheBlockchainAPIResource(APIResource):
         payload = {
             "network": network.value,
             "config_address": config_address,
-            "candy_machine_contract_version": candy_machine_contract_version.value
+            "candy_machine_contract_version": "v2"
         }
         payload = {**payload, **wallet_payload}
         response = self._request(
@@ -796,12 +786,11 @@ class TheBlockchainAPIResource(APIResource):
         nft_name: Optional[str] = None,
         nft_name_index: Optional[int] = None,
         nft_name_search_method: SearchMethod = SearchMethod.EXACT_MATCH,
-        network: SolanaNetwork = SolanaNetwork.DEVNET,
-        candy_machine_contract_version: SolanaCandyMachineContractVersion = SolanaCandyMachineContractVersion.V1,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         payload = {
             'network': network.value,
-            'candy_machine_contract_version': candy_machine_contract_version.value
+            'candy_machine_contract_version': 'v2'
         }
         if update_authority is not None:
             payload['update_authority'] = update_authority
@@ -832,8 +821,7 @@ class TheBlockchainAPIResource(APIResource):
         self,
         wallet: SolanaWallet,
         include_gatekeeper: bool = False,
-        network: SolanaNetwork = SolanaNetwork.DEVNET,
-        candy_machine_contract_version: SolanaCandyMachineContractVersion = SolanaCandyMachineContractVersion.V1,
+        network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         Mint Info:
@@ -841,13 +829,11 @@ class TheBlockchainAPIResource(APIResource):
         :param wallet:
         :param network:
         :param include_gatekeeper:
-        :param candy_machine_contract_version:
         :return:
         """
         wallet_payload = wallet.get_formatted_request_payload()
         payload = {
             "network": network.value,
-            "candy_machine_contract_version": candy_machine_contract_version.value,
             "include_gatekeeper": include_gatekeeper
         }
         payload = {**payload, **wallet_payload}
@@ -986,24 +972,16 @@ class TheBlockchainAPIResource(APIResource):
         mint_address: str,
         wallet: SolanaWallet,
         nft_price: int,
-        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
-        if not isinstance(exchange, SolanaExchange):
-            raise Exception(
-                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
-                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
-                f"use `from theblockchainapi import SolanaExchange`. "
-                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
-            )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/{exchange.value}/list/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/magic-eden/list/{network.value}/{mint_address}",
             request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
@@ -1014,23 +992,15 @@ class TheBlockchainAPIResource(APIResource):
         self,
         mint_address: str,
         wallet: SolanaWallet,
-        exchange: SolanaExchange,
         network: SolanaNetwork = SolanaNetwork.DEVNET
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
-        if not isinstance(exchange, SolanaExchange):
-            raise Exception(
-                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
-                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
-                f"use `from theblockchainapi import SolanaExchange`. "
-                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
-            )
         payload = wallet.get_formatted_request_payload()
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/{exchange.value}/delist/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/magic-eden/delist/{network.value}/{mint_address}",
             request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:
@@ -1042,24 +1012,22 @@ class TheBlockchainAPIResource(APIResource):
         mint_address: str,
         wallet: SolanaWallet,
         nft_price: int,
-        exchange: SolanaExchange,
-        network: SolanaNetwork = SolanaNetwork.DEVNET
+        network: SolanaNetwork = SolanaNetwork.DEVNET,
+        skip_checks: Optional[bool] = None,
+        seller_public_key: Optional[str] = None
     ):
         """
         https://docs.blockchainapi.com/#operation/solanaGetAccount
         """
-        if not isinstance(exchange, SolanaExchange):
-            raise Exception(
-                f"You provided {exchange} as the value for attribute `exchange` but the value for `exchange` "
-                f"needs to be an instance of `SolanaExchange`. To import `SolanaExchange`, "
-                f"use `from theblockchainapi import SolanaExchange`. "
-                f"Then use it as follows: `exchange=SolanaExchange.SOLSEA`, for example."
-            )
         payload = wallet.get_formatted_request_payload()
         payload['nft_price'] = nft_price
+        if skip_checks is not None:
+            payload['skip_checks'] = skip_checks
+        if seller_public_key is not None:
+            payload['seller_public_key'] = seller_public_key
         response = self._request(
             payload=payload,
-            endpoint=f"solana/nft/marketplaces/{exchange.value}/buy/{network.value}/{mint_address}",
+            endpoint=f"solana/nft/marketplaces/magic-eden/buy/{network.value}/{mint_address}",
             request_method=self._RequestMethod.POST
         )
         if 'error_message' in response:

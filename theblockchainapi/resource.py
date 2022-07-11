@@ -128,7 +128,7 @@ class SolanaWallet:
 class APIResource:
 
     _url = "https://api.blockchainapi.com/v1/"
-    __timeout = 120
+    __timeout = 300
 
     class _RequestMethod(Enum):
         GET = "GET"
@@ -153,7 +153,7 @@ class APIResource:
                 raise Exception("`timeout` must be an integer")
             if timeout < 1:
                 raise Exception("`timeout` must be at least 1 second.")
-            if timeout > 120:
+            if timeout > 300:
                 raise Exception("`timeout` must be at most 120 second.")
             self.__timeout = timeout
 
@@ -168,7 +168,15 @@ class APIResource:
             'Language': 'Python'
         }
 
-    def _request(self, endpoint, request_method, files=None, headers=None, payload=None, params=None):
+    def _request(
+        self,
+        endpoint,
+        request_method,
+        files=None,
+        headers=None,
+        payload=None,
+        params=None
+    ):
         """
         Makes an API request.
         :param payload: the payload containing the parameters
